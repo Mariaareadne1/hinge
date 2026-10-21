@@ -1,0 +1,7 @@
+node_modules
+dist
+.export-fixture
+test-results
+playwright-report
+*.tsbuildinfo
+.DS_Store

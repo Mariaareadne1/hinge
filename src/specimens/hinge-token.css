@@ -1,0 +1,38 @@
+/* HingeToken — the transform and --hinge-lift are written by the Hinge runtime. */
+.hinge-token {
+  --hinge-lift: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 16px 6px 6px;
+  border-radius: 999px;
+  background: #fbfaf6;
+  color: #1b1c1e;
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 500;
+  border: 1px solid rgba(27, 28, 30, 0.12);
+  box-shadow:
+    0 1px 1px rgba(27, 28, 30, 0.08),
+    0 calc(2px + var(--hinge-lift) * 14px) calc(4px + var(--hinge-lift) * 24px)
+      calc(var(--hinge-lift) * -5px) rgba(27, 28, 30, calc(0.1 + var(--hinge-lift) * 0.16));
+  cursor: grab;
+  user-select: none;
+  -webkit-user-select: none;
+  will-change: transform;
+  outline: none;
+}
+.hinge-token[data-hinge-state='press'],
+.hinge-token[data-hinge-state='drag'] { cursor: grabbing; }
+.hinge-token:focus-visible { box-shadow: 0 0 0 3px #fbfaf6, 0 0 0 5px #2a44d4; }
+.hinge-token__disc {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #f0542b;
+  color: #fff8f2;
+  font-size: 14px;
+  font-weight: 600;
+}
