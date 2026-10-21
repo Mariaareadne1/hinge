@@ -59,6 +59,33 @@ export function at(samples: Sample[], key: keyof Sample, t: number): number {
   return samples[samples.length - 1]![key]
 }
 
+/**
+ * Parity between two recordings of the same motion. Each recorder sees values a
+ * frame or so late and a busy page can drop frames, so: fit one latency offset
+ * in ±maxLag, and compare only samples of `a` whose time is bracketed in `b` by
+ * samples less than `maxGap` apart (no interpolating across dropped frames).
+ */
+export function alignedDiff(a: Sample[], b: Sample[], key: keyof Sample, from: number, to: number, slack = FRAME_SLACK, maxLag = 0.034, maxGap = 0.025) {
+  const bracketed = (t: number) => {
+    for (let i = 1; i < b.length; i++) if (b[i]!.t >= t) return b[i - 1]!.t <= t && b[i]!.t - b[i - 1]!.t <= maxGap
+    return false
+  }
+  let best = Infinity
+  for (let lag = -maxLag; lag <= maxLag + 1e-9; lag += 0.001) {
+    let worst = 0
+    let compared = 0
+    for (const s of a) {
+      const tb = s.t + lag
+      if (s.t < from || s.t > to || !bracketed(tb)) continue
+      compared++
+      const slope = (at(b, key, tb + 0.008) - at(b, key, tb - 0.008)) / 0.016
+      worst = Math.max(worst, Math.max(0, Math.abs(s[key] - at(b, key, tb)) - Math.abs(slope) * slack))
+    }
+    if (compared >= 20) best = Math.min(best, worst)
+  }
+  return best
+}
+
 /** Max |a - b| for a channel over [from, to], sampled every 5 ms. */
 export function maxDiff(a: Sample[], b: Sample[], key: keyof Sample, from: number, to: number): number {
   let worst = 0
@@ -67,7 +94,14 @@ export function maxDiff(a: Sample[], b: Sample[], key: keyof Sample, from: numbe
 }
 
 /**
- * Max deviation of measured samples from a model function over [from, to].
+ * Per-sample timing slack: a value is read up to one frame away from the moment
+ * it was computed, so deviations within |slope| × one frame are timing, not motion.
+ */
+export const FRAME_SLACK = 1 / 60
+
+/**
+ * Max deviation of measured samples from a model function over [from, to],
+ * after allowing FRAME_SLACK of per-sample timing jitter.
  * A frame-sampling recorder sees each value up to a frame or two after it was
  * written, so the best latency in [0, maxLag] is fitted and must stay small.
  */
@@ -78,7 +112,10 @@ export function modelError(
   for (let lag = 0; lag <= maxLag + 1e-9; lag += 0.001) {
     let worst = 0
     for (const s of samples) {
-      if (s.t >= from && s.t <= to) worst = Math.max(worst, Math.abs(s[key] - model(Math.max(0, s.t - lag))))
+      if (s.t < from || s.t > to) continue
+      const t = Math.max(0, s.t - lag)
+      const slope = (model(t + 0.001) - model(Math.max(0, t - 0.001))) / 0.002
+      worst = Math.max(worst, Math.max(0, Math.abs(s[key] - model(t)) - Math.abs(slope) * FRAME_SLACK))
     }
     best = Math.min(best, worst)
   }

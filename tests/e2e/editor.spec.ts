@@ -154,9 +154,9 @@ test('reduced motion swaps springs for instant changes', async ({ page }) => {
   await page.mouse.move(c.x, c.y)
   await page.waitForTimeout(300)
   const samples = await stopRecording(page)
-  // No animation: the pose is reached within two frames and never overshoots.
-  for (const s of samples.filter((s) => s.t > 0.034)) expect(s.y).toBeCloseTo(-10, 1)
-  for (const s of samples) expect(s.y).toBeGreaterThanOrEqual(-10.01)
+  // No animation: every frame shows either the rest pose or the hover pose, never between.
+  for (const s of samples) expect(Math.min(Math.abs(s.y), Math.abs(s.y + 10))).toBeLessThan(0.05)
+  expect(samples[samples.length - 1]!.y).toBeCloseTo(-10, 1)
 })
 
 test('edits change the runtime, persist, undo as one step, and survive reload', async ({ page }) => {

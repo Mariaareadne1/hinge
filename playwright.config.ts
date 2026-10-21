@@ -10,7 +10,8 @@ export default defineConfig({
     baseURL: 'http://localhost:5401',
     viewport: { width: 1440, height: 900 },
     trace: 'retain-on-failure',
-    launchOptions: { args: ['--use-angle=metal'] },
+    // Headless Chrome on macOS is far smoother on Metal than SwiftShader.
+    launchOptions: { args: process.platform === 'darwin' ? ['--use-angle=metal'] : [] },
   },
   webServer: {
     command: 'pnpm dev',

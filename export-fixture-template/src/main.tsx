@@ -7,10 +7,14 @@ function App() {
   const name = new URLSearchParams(location.search).get('case') ?? Object.keys(CASES)[0]!
   const Component = CASES[name]
   const [presses, setPresses] = useState(0)
+  const [mounted, setMounted] = useState(true)
   if (!Component) return <p>Unknown case {name}</p>
   return (
     <>
-      <Component onPress={() => setPresses((n) => n + 1)} />
+      {mounted && <Component onPress={() => setPresses((n) => n + 1)} />}
+      <button data-testid="toggle" style={{ position: 'fixed', top: 8, left: 8 }} onClick={() => setMounted((m) => !m)}>
+        toggle
+      </button>
       <output data-testid="press-count" style={{ position: 'fixed', bottom: 8, left: 8 }}>{presses}</output>
     </>
   )

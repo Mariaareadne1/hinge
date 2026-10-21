@@ -331,6 +331,10 @@ export class HingeRuntime {
   }
 
   private springTo(c: Channel, target: number, spring: SpringParams, t = now()): void {
+    const current = this.segments[c]
+    // A transition that leaves this channel's target unchanged must not swap the
+    // spring of motion already in flight (e.g. a drag release gliding home).
+    if (!current.pinned && current.target === target && !this.options.reducedMotion) return
     const { value, velocity } = this.valueOf(c, t)
     if (this.options.reducedMotion) {
       this.segments[c] = { target, x0: 0, v0: 0, t0: t, spring, pinned: false, settled: true }
@@ -362,13 +366,14 @@ export class HingeRuntime {
     const spring = this.behavior.drag.spring
     const t = now()
     this.state = inside || this.focused ? 'hover' : 'rest'
+    const pose = this.poseFor(this.state)
     for (const c of ['x', 'y'] as const) {
       const value = this.segments[c].target
+      const target = pose[c]
       this.segments[c] = this.options.reducedMotion
-        ? { target: 0, x0: 0, v0: 0, t0: t, spring, pinned: false, settled: true }
-        : { target: 0, x0: value, v0: v[c], t0: t, spring, pinned: false, settled: false }
+        ? { target, x0: 0, v0: 0, t0: t, spring, pinned: false, settled: true }
+        : { target, x0: value - target, v0: v[c], t0: t, spring, pinned: false, settled: false }
     }
-    const pose = this.poseFor(this.state)
     for (const c of ['scale', 'rotate', 'lift'] as const) this.springTo(c, pose[c], spring, t)
     this.schedule()
     this.options.onFrame?.(this.getValues(t), this.state)

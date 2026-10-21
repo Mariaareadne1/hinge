@@ -49,7 +49,7 @@ button:disabled { cursor: not-allowed; }
 
 .topbar {
   display: grid;
-  grid-template-columns: 240px 1fr auto;
+  grid-template-columns: auto 1fr auto;
   align-items: center;
   gap: 20px;
   padding: 12px 20px;
@@ -59,7 +59,7 @@ button:disabled { cursor: not-allowed; }
 .topbar__brand { display: flex; align-items: baseline; gap: 10px; min-width: 0; }
 .wordmark { font-family: var(--serif); font-style: italic; font-size: 26px; letter-spacing: -0.01em; line-height: 1; }
 .topbar__tagline { font-size: 11px; color: var(--graphite-3); letter-spacing: 0.02em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.topbar__project { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.topbar__project { display: flex; align-items: center; gap: 12px; min-width: 0; padding-left: 12px; border-left: 1px solid var(--rule); }
 .topbar__name {
   border: 1px solid transparent; background: transparent; border-radius: 6px;
   padding: 4px 8px; font-weight: 500; min-width: 0; width: min(320px, 100%);
@@ -361,7 +361,7 @@ button.strip__cell:hover { background: var(--porcelain); }
 @media (max-width: 420px) {
   .topbar { padding: 10px 16px; gap: 10px; }
   .primary-button { padding: 8px 12px; }
-  .stage { min-height: 340px; }
+  .stage { min-height: 410px; }
   .stage__specimen .hinge-card { width: 240px; }
   .stage__readout { font-size: 10px; }
 }

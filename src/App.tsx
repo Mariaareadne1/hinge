@@ -9,14 +9,14 @@ import { BehaviorStrip } from './components/BehaviorStrip'
 import { Inspector } from './components/Inspector'
 import { ExportDialog } from './components/ExportDialog'
 import { RecoveryBanner } from './components/RecoveryBanner'
-import type { TracePoint } from './components/SpringGraph'
+import { createTraceStore } from './state/traceStore'
 
 export default function App() {
   const studio = useStudio()
   const { project, actions } = studio
   const [selected, setSelected] = useState<EditableState>('hover')
   const [live, setLive] = useState<InteractionState>('rest')
-  const [trace, setTrace] = useState<TracePoint[]>([])
+  const [traceStore] = useState(createTraceStore)
   const [exporting, setExporting] = useState(false)
   const [pressCount, setPressCount] = useState(0)
   const osReduced = usePrefersReducedMotion()
@@ -71,7 +71,7 @@ export default function App() {
             reducedMotion={reducedMotion}
             traceFor={effectiveSelected}
             onLiveState={setLive}
-            onTrace={setTrace}
+            onTrace={traceStore.set}
             onPress={onPress}
           />
           <BehaviorStrip selected={effectiveSelected} live={live} dragEnabled={project.behavior.drag.enabled} onSelect={setSelected} />
@@ -79,7 +79,7 @@ export default function App() {
         <Inspector
           project={project}
           selected={effectiveSelected}
-          trace={trace}
+          traceStore={traceStore}
           onPreview={actions.preview}
           onPush={actions.push}
           onCommit={actions.commit}

@@ -2,13 +2,14 @@ import { DRAG_LIMITS, POSE_LIMITS, type HingeProject } from '../domain/schema'
 import type { DragAxis, HingeBehavior, Pose } from '../runtime/runtime'
 import { SPRING_LIMITS, type SpringParams } from '../runtime/spring'
 import { ScrubField } from './ScrubField'
-import { SpringGraph, type TracePoint } from './SpringGraph'
+import { SpringGraph } from './SpringGraph'
+import type { TraceStore } from '../state/traceStore'
 import type { EditableState } from './Stage'
 
 interface InspectorProps {
   project: HingeProject
   selected: EditableState
-  trace: TracePoint[]
+  traceStore: TraceStore
   onPreview: (p: HingeProject) => void
   onPush: (p: HingeProject) => void
   onCommit: () => void
@@ -33,7 +34,7 @@ const TITLES: Record<EditableState, { title: string; graph: string; intro: strin
   drag: { title: 'Drag & release', graph: 'Release response (from rest, no fling)', intro: 'Follows the pointer, then springs home with the throw’s velocity.' },
 }
 
-export function Inspector({ project, selected, trace, onPreview, onPush, onCommit }: InspectorProps) {
+export function Inspector({ project, selected, traceStore, onPreview, onPush, onCommit }: InspectorProps) {
   const b = project.behavior
   const withBehavior = (behavior: HingeBehavior): HingeProject => ({ ...project, behavior })
 
@@ -54,7 +55,7 @@ export function Inspector({ project, selected, trace, onPreview, onPush, onCommi
       <SpringGraph
         title={meta.graph}
         spring={springOf}
-        trace={selected === 'drag' ? [] : trace}
+        traceStore={selected === 'drag' ? null : traceStore}
         onPreview={(spring) => onPreview(setSpring(spring))}
         onCommit={onCommit}
       />
@@ -108,7 +109,7 @@ export function Inspector({ project, selected, trace, onPreview, onPush, onCommi
   )
 }
 
-function DragFields({ project, onPreview, onPush, onCommit }: Omit<InspectorProps, 'selected' | 'trace'>) {
+function DragFields({ project, onPreview, onPush, onCommit }: Omit<InspectorProps, 'selected' | 'traceStore'>) {
   const d = project.behavior.drag
   const set = (patch: Partial<HingeBehavior['drag']>) => ({ ...project, behavior: { ...project.behavior, drag: { ...d, ...patch } } })
   const L = DRAG_LIMITS

@@ -1,4 +1,5 @@
 import { useMemo, useRef, useState } from 'react'
+import { useTrace, createTraceStore, type TraceStore } from '../state/traceStore'
 import { springCharacter, springFromPeak, stepResponse, type SpringParams } from '../runtime/spring'
 
 export interface TracePoint {
@@ -8,8 +9,8 @@ export interface TracePoint {
 
 interface SpringGraphProps {
   spring: SpringParams
-  /** normalised samples measured from the live specimen (0 → 1) */
-  trace: TracePoint[]
+  /** normalised samples measured from the live specimen (0 → 1); null hides the trace */
+  traceStore: TraceStore | null
   title: string
   onPreview: (spring: SpringParams) => void
   onCommit: () => void
@@ -26,9 +27,12 @@ const Y_MAX = 1.75
  * closed-form solution the runtime uses. The peak handle edits the spring by
  * its two most legible properties: when it peaks and how far it overshoots.
  */
-export function SpringGraph({ spring, trace, title, onPreview, onCommit }: SpringGraphProps) {
+const EMPTY_STORE = createTraceStore()
+
+export function SpringGraph({ spring, traceStore, title, onPreview, onCommit }: SpringGraphProps) {
   const svgRef = useRef<SVGSVGElement>(null)
   const [dragging, setDragging] = useState(false)
+  const trace = useTrace(traceStore ?? EMPTY_STORE)
 
   const { response, duration, zeta } = useMemo(() => {
     const quick = stepResponse(spring, { duration: 0.1, samples: 2 })
