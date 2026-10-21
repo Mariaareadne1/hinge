@@ -285,13 +285,21 @@ test('grabbing the specimen mid-glide continues from where it is', async ({ page
   await page.waitForTimeout(300)
   await page.mouse.up()
   await page.waitForTimeout(60)
-  const before = (await transformOf(page)).x
-  expect(before).toBeGreaterThan(20)
-  // Grab it again where it now is and nudge past the drag threshold.
+  // Record where the element is at the instant it is grabbed again.
+  await page.locator(SPECIMEN).evaluate((el) => {
+    el.addEventListener('pointerdown', () => {
+      ;(window as unknown as { __atDown: number }).__atDown = new DOMMatrix(getComputedStyle(el).transform).m41
+    }, { capture: true, once: true })
+  })
   await page.mouse.down()
   await page.mouse.move(c.x + 106, c.y, { steps: 2 })
+  const atDown = await page.evaluate(() => (window as unknown as { __atDown: number }).__atDown)
   const after = (await transformOf(page)).x
-  expect(Math.abs(after - before)).toBeLessThan(15)
+  expect(atDown).toBeGreaterThan(5)
+  // Continues from the grabbed position plus the 6 px of pointer travel (one frame of glide tolerance);
+  // the old behaviour jumped to the full 106 px offset from the original grab point.
+  expect(Math.abs(after - (atDown + 6))).toBeLessThan(20)
+  expect(after).toBeLessThan(90)
   await page.mouse.up()
 })
 
