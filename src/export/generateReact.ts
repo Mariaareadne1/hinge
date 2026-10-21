@@ -1,4 +1,4 @@
-import { SCHEMA_VERSION, type HingeProject, type SpecimenKind } from '../domain/schema'
+import { SCHEMA_VERSION, sanitizeName, type HingeProject, type SpecimenKind } from '../domain/schema'
 import type { HingeBehavior } from '../runtime/runtime'
 
 /** Text of the files an export is built from (see sources.ts / scripts). */
@@ -16,6 +16,9 @@ export const EXPORT_DEPENDENCIES = { react: '>=18.2.0', 'react-dom': '>=18.2.0' 
 
 const COMPONENT_NAME: Record<SpecimenKind, string> = { card: 'HingeCard', button: 'HingeButton', token: 'HingeToken' }
 const CSS_NAME: Record<SpecimenKind, string> = { card: 'hinge-card.css', button: 'hinge-button.css', token: 'hinge-token.css' }
+
+/** Next.js App Router: components with effects must be client components. Ignored elsewhere. */
+const USE_CLIENT = "'use client'\n\n"
 
 const BEHAVIOR_BLOCK = /\/\/ @hinge:behavior-start\n[\s\S]*?\/\/ @hinge:behavior-end\n/
 
@@ -46,11 +49,12 @@ export function generateReact(project: HingeProject, sources: ExportSources): Ex
   }
 
   const behaviorDecl =
-    `// Tuned in Hinge — "${project.name.replace(/[*/\\]/g, '')}".\n` +
+    `// Tuned in Hinge — "${sanitizeName(project.name).replace(/[*/\\]/g, '')}".\n` +
     `const BEHAVIOR: HingeBehavior = ${formatBehavior(project.behavior)}\n`
 
-  const tsx = specimen.tsx
-    .replace(BEHAVIOR_BLOCK, behaviorDecl)
+  // Replacer functions: a string replacement would interpret $&, $' etc. in the name.
+  const tsx = USE_CLIENT + specimen.tsx
+    .replace(BEHAVIOR_BLOCK, () => behaviorDecl)
     .replace("from '../runtime/useHinge'", "from './hinge/useHinge'")
     .replace("from '../runtime/runtime'", "from './hinge/runtime'")
 
@@ -67,7 +71,7 @@ export function generateReact(project: HingeProject, sources: ExportSources): Ex
     { path: css, contents: specimen.css },
     { path: 'hinge/spring.ts', contents: sources.runtime['spring.ts'] },
     { path: 'hinge/runtime.ts', contents: sources.runtime['runtime.ts'] },
-    { path: 'hinge/useHinge.ts', contents: sources.runtime['useHinge.ts'] },
+    { path: 'hinge/useHinge.ts', contents: USE_CLIENT + sources.runtime['useHinge.ts'] },
     { path: 'hinge.config.json', contents: JSON.stringify(config, null, 2) + '\n' },
     { path: 'README.md', contents: readme(project, name, css) },
   ]
@@ -93,7 +97,7 @@ export default function Page() {
 }
 \`\`\`
 
-Requires React 18.2+ and a bundler that imports CSS from TypeScript (Vite, Next.js,
+Requires React 18.2+ (files start with \`'use client'\` for the Next.js App Router) and a bundler that imports CSS from TypeScript (Vite, Next.js,
 Parcel, webpack with css-loader). No other dependencies. The \`hinge/\` folder is
 the same spring solver and interaction runtime Hinge runs in its editor, so the
 motion matches what you tuned.

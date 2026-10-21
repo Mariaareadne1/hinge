@@ -5,6 +5,11 @@ export const STORAGE_KEY = 'hinge.library.v1'
 export interface Library {
   projects: HingeProject[]
   currentId: string
+  /**
+   * Entries that could not be read (damaged, or from a newer Hinge). They are
+   * written back untouched on every save so nothing is silently destroyed.
+   */
+  unreadable?: unknown[]
 }
 
 export type LoadResult =
@@ -54,21 +59,22 @@ export function loadLibrary(store: KeyValueStore | null = defaultStore()): LoadR
   }
 
   const projects: HingeProject[] = []
-  let skipped = 0
+  const unreadable: unknown[] = []
   for (const item of (data as { projects: unknown[] }).projects) {
     try {
       projects.push(parseProject(item))
     } catch (err) {
       if (!(err instanceof SchemaError)) throw err
-      skipped++
+      unreadable.push(item)
     }
   }
+  const skipped = unreadable.length
   if (projects.length === 0) {
     return { status: 'corrupt', reason: 'None of the saved projects could be read.', raw }
   }
   const wanted = (data as { currentId?: unknown }).currentId
   const currentId = projects.some((p) => p.id === wanted) ? (wanted as string) : projects[0]!.id
-  return { status: 'ok', library: { projects, currentId }, skipped }
+  return { status: 'ok', library: { projects, currentId, unreadable }, skipped }
 }
 
 export type SaveResult = { ok: true; savedAt: number } | { ok: false; reason: string }
@@ -76,7 +82,8 @@ export type SaveResult = { ok: true; savedAt: number } | { ok: false; reason: st
 export function saveLibrary(library: Library, store: KeyValueStore | null = defaultStore()): SaveResult {
   if (!store) return { ok: false, reason: 'Browser storage is disabled.' }
   try {
-    store.setItem(STORAGE_KEY, JSON.stringify(library))
+    const { projects, currentId, unreadable = [] } = library
+    store.setItem(STORAGE_KEY, JSON.stringify({ projects: [...projects, ...unreadable], currentId }))
     return { ok: true, savedAt: Date.now() }
   } catch (err) {
     const quota = err instanceof DOMException && err.name === 'QuotaExceededError'

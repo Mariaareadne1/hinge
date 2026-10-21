@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useReducer, useState } from 'react'
 import { createProject, parseProject, behaviorForSpecimen, newId, sanitizeName, type HingeProject, type RecipeId, type SpecimenKind } from '../domain/schema'
 import { commit, createHistory, preview, push, redo, reset, undo, type History } from '../domain/history'
-import { clearLibrary, loadLibrary, saveLibrary, type LoadResult } from '../storage/projects'
+import { clearLibrary, loadLibrary, saveLibrary, STORAGE_KEY, type LoadResult } from '../storage/projects'
 
 interface StudioState {
   /** every project except the one being edited, which lives in `history` */
@@ -29,6 +29,7 @@ function reducer(state: StudioState, action: Action): StudioState {
     case 'preview':
       return { ...state, history: preview(state.history, touch(action.project)) }
     case 'push':
+      if (sameProject(action.project, current)) return { ...state, history: commit(state.history, sameProject) }
       return { ...state, history: push(commit(state.history, sameProject), touch(action.project)) }
     case 'commit':
       return { ...state, history: commit(state.history, sameProject) }
@@ -85,6 +86,17 @@ export function useStudio() {
     boot.status === 'unavailable' ? { kind: 'error', reason: boot.reason } : boot.status === 'ok' ? { kind: 'saved', at: Date.now() } : { kind: 'pending' },
   )
 
+  const [unreadable] = useState(() => (boot.status === 'ok' ? boot.library.unreadable ?? [] : []))
+  // Another tab wrote the library: stop saving so neither tab overwrites the other.
+  const [conflict, setConflict] = useState(false)
+  useEffect(() => {
+    const onStorage = (e: StorageEvent) => {
+      if (e.key === STORAGE_KEY) setConflict(true)
+    }
+    window.addEventListener('storage', onStorage)
+    return () => window.removeEventListener('storage', onStorage)
+  }, [])
+
   const project = state.history.present
   const projects = useMemo(
     () => [...state.others, project].sort((a, b) => b.updatedAt - a.updatedAt),
@@ -92,31 +104,39 @@ export function useStudio() {
   )
   const gestureOpen = state.history.gestureStart !== null
 
+  // Only save after something actually changed (or on a first run, to create the library).
+  const initialProjects = useState(projects)[0]
+  const needsSave = boot.status === 'empty' || projects !== initialProjects
+
   useEffect(() => {
     if (recovery) {
       setSaveStatus({ kind: 'paused', reason: 'Autosave paused until you resolve the saved-data problem.' })
       return
     }
-    if (gestureOpen) return
+    if (conflict) {
+      setSaveStatus({ kind: 'paused', reason: 'Edited in another tab. Reload to continue.' })
+      return
+    }
+    if (gestureOpen || !needsSave) return
     setSaveStatus((s) => (s.kind === 'error' ? s : { kind: 'pending' }))
     const timer = window.setTimeout(() => {
-      const result = saveLibrary({ projects, currentId: project.id })
+      const result = saveLibrary({ projects, currentId: project.id, unreadable })
       setSaveStatus(result.ok ? { kind: 'saved', at: result.savedAt } : { kind: 'error', reason: result.reason })
     }, AUTOSAVE_DELAY_MS)
     return () => window.clearTimeout(timer)
-  }, [projects, project.id, recovery, gestureOpen])
+  }, [projects, project.id, recovery, gestureOpen, conflict, needsSave, unreadable])
 
   // Flush immediately when the page is hidden or closed, so an edit made
   // inside the autosave delay (or mid-gesture) is not lost.
-  const latest = useMemo(() => ({ projects, currentId: project.id }), [projects, project.id])
+  const latest = useMemo(() => ({ projects, currentId: project.id, unreadable }), [projects, project.id, unreadable])
   useEffect(() => {
-    if (recovery) return
+    if (recovery || conflict || !needsSave) return
     const flush = () => {
       saveLibrary(latest)
     }
     window.addEventListener('pagehide', flush)
     return () => window.removeEventListener('pagehide', flush)
-  }, [latest, recovery])
+  }, [latest, recovery, conflict, needsSave])
 
   const previewProject = useCallback((p: HingeProject) => dispatch({ type: 'preview', project: p }), [])
   const pushProject = useCallback((p: HingeProject) => dispatch({ type: 'push', project: p }), [])
@@ -141,9 +161,10 @@ export function useStudio() {
       },
       applyRecipe: (p: HingeProject, recipe: RecipeId) => pushProject({ ...p, behavior: behaviorForSpecimen(recipe, p.specimen) }),
       setSpecimen: (p: HingeProject, specimen: SpecimenKind) =>
-        pushProject({ ...p, specimen, behavior: { ...p.behavior, drag: { ...p.behavior.drag, enabled: specimen !== 'button' } } }),
+        p.specimen !== specimen && pushProject({ ...p, specimen, behavior: { ...p.behavior, drag: { ...p.behavior.drag, enabled: specimen !== 'button' } } }),
       resolveRecovery: (choice: 'fresh') => {
         if (choice === 'fresh') {
+          // The banner downloads a backup of the unreadable data before calling this.
           clearLibrary()
           dispatch({ type: 'replaceAll', projects: [createProject()], currentId: '' })
         }
@@ -161,7 +182,7 @@ export function useStudio() {
     canRedo: state.history.future.length > 0,
     saveStatus,
     recovery,
-    notice,
+    notice: notice ?? (conflict ? 'This library was changed in another tab. Reload to see the latest — autosave is paused here.' : null),
     isFirstRun: boot.status === 'empty',
     actions,
   }

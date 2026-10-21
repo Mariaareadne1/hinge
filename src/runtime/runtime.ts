@@ -103,7 +103,14 @@ export class HingeRuntime {
   private raf = 0
   private pointerId: number | null = null
   private pointerType = ''
+  /** pointer position that corresponds to a zero drag offset */
   private origin = { x: 0, y: 0 }
+  /** where the pointer went down, for the drag threshold */
+  private downAt = { x: 0, y: 0 }
+  /** the pointer is over the element (tracked so blur/cancel can return to hover) */
+  private pointerInside = false
+  /** the next click on the element should be swallowed (it ended a drag or a release outside) */
+  private suppressClick = false
   private samples: Array<{ t: number; x: number; y: number }> = []
   private dragOffset = { x: 0, y: 0 }
   private destroyed = false
@@ -175,18 +182,32 @@ export class HingeRuntime {
     on(this.el, 'blur', () => this.onBlur())
     on(this.el, 'keydown', (e) => this.onKeyDown(e))
     on(this.el, 'keyup', (e) => this.onKeyUp(e))
+    // Activation goes through the native click so forms, assistive tech and
+    // el.click() all work; clicks that ended a drag are swallowed first.
+    this.el.addEventListener('click', this.onClickCapture, true)
+    this.cleanup.push(() => this.el.removeEventListener('click', this.onClickCapture, true))
+    on(this.el, 'click', () => this.options.onPress?.())
     // Dragging an element natively (images, text) would steal the gesture.
     on(this.el, 'dragstart', (e) => e.preventDefault())
     on(window, 'blur', () => this.cancelAll())
   }
 
+  private onClickCapture = (e: MouseEvent): void => {
+    if (!this.suppressClick) return
+    this.suppressClick = false
+    e.preventDefault()
+    e.stopImmediatePropagation()
+  }
+
   private onEnter(e: PointerEvent): void {
     if (e.pointerType === 'touch') return
+    this.pointerInside = true
     if (this.state === 'rest') this.setState('hover')
   }
 
   private onLeave(e: PointerEvent): void {
     if (e.pointerType === 'touch') return
+    this.pointerInside = false
     if (this.state === 'hover' && !this.focused) this.setState('rest')
   }
 
@@ -199,7 +220,11 @@ export class HingeRuntime {
     }
     this.pointerId = e.pointerId
     this.pointerType = e.pointerType
-    this.origin = { x: e.clientX, y: e.clientY }
+    // Grabbing an element mid-glide continues from where it is, not from home.
+    const t = now()
+    this.origin = { x: e.clientX - this.valueOf('x', t).value, y: e.clientY - this.valueOf('y', t).value }
+    this.downAt = { x: e.clientX, y: e.clientY }
+    this.suppressClick = false
     this.samples = [{ t: e.timeStamp, x: e.clientX, y: e.clientY }]
     this.dragOffset = { x: 0, y: 0 }
     try {
@@ -215,13 +240,12 @@ export class HingeRuntime {
     this.samples.push({ t: e.timeStamp, x: e.clientX, y: e.clientY })
     while (this.samples.length > 2 && e.timeStamp - this.samples[0]!.t > VELOCITY_WINDOW_MS) this.samples.shift()
 
-    const dx = e.clientX - this.origin.x
-    const dy = e.clientY - this.origin.y
-    if (this.state === 'press' && this.behavior.drag.enabled && Math.hypot(dx, dy) > DRAG_THRESHOLD_PX) {
+    const moved = Math.hypot(e.clientX - this.downAt.x, e.clientY - this.downAt.y)
+    if (this.state === 'press' && this.behavior.drag.enabled && moved > DRAG_THRESHOLD_PX) {
       this.setState('drag')
     }
     if (this.state === 'drag') {
-      this.dragOffset = this.constrain(dx, dy)
+      this.dragOffset = this.constrain(e.clientX - this.origin.x, e.clientY - this.origin.y)
       this.pin('x', this.dragOffset.x)
       this.pin('y', this.dragOffset.y)
       this.retargetTilt()
@@ -233,12 +257,13 @@ export class HingeRuntime {
     if (e.pointerId !== this.pointerId) return
     const inside = this.isInside(e.clientX, e.clientY)
     // Touch has no hover: a finger lifting off leaves the element at rest.
-    const hovering = (inside && this.pointerType !== 'touch') || this.focused
+    this.pointerInside = inside && this.pointerType !== 'touch'
     const wasPress = this.state === 'press'
-    if (this.state === 'drag') this.release(hovering)
-    else if (wasPress) this.setState(hovering ? 'hover' : 'rest')
+    // Only a press released over the element activates it (the click that follows).
+    this.suppressClick = !(wasPress && inside)
+    if (this.state === 'drag') this.release(this.pointerInside || this.focused)
+    else if (wasPress) this.setState(this.restingState())
     this.endPointer()
-    if (wasPress && inside) this.options.onPress?.()
   }
 
   private onCancel(e: PointerEvent): void {
@@ -261,21 +286,34 @@ export class HingeRuntime {
   private onBlur(): void {
     this.focused = false
     this.keyPressing = false
-    if (this.pointerId === null && this.state !== 'rest') this.setState('rest')
+    if (this.pointerId === null) this.setState(this.restingState())
+  }
+
+  /** hover while the pointer is over the element or it has keyboard focus, else rest */
+  private restingState(): InteractionState {
+    return this.pointerInside || this.focused ? 'hover' : 'rest'
+  }
+
+  /** Native buttons activate themselves on Enter/Space; other roles need help. */
+  private isNativeButton(): boolean {
+    return this.el instanceof HTMLButtonElement
   }
 
   private onKeyDown(e: KeyboardEvent): void {
-    this.focused = true
+    if (e.altKey || e.metaKey || e.ctrlKey) return
     if (e.key === ' ' || e.key === 'Enter') {
-      e.preventDefault()
+      if (!this.isNativeButton()) e.preventDefault()
       if (e.repeat || this.pointerId !== null) return
+      this.focused = true
       this.keyPressing = true
+      this.suppressClick = false
       this.setState('press')
       return
     }
     const flick = this.behavior.drag.enabled ? arrowVector(e.key, this.behavior.drag.axis) : null
     if (flick && this.pointerId === null) {
       e.preventDefault()
+      this.focused = true
       this.flick(flick.x * KEYBOARD_FLICK_PX_PER_S, flick.y * KEYBOARD_FLICK_PX_PER_S)
     }
     if (e.key === 'Escape' && this.state !== 'rest') this.cancelAll()
@@ -283,10 +321,13 @@ export class HingeRuntime {
 
   private onKeyUp(e: KeyboardEvent): void {
     if ((e.key === ' ' || e.key === 'Enter') && this.keyPressing) {
-      e.preventDefault()
       this.keyPressing = false
-      this.setState(this.focused ? 'hover' : 'rest')
-      this.options.onPress?.()
+      this.setState(this.restingState())
+      // A native <button> fires its own click (and submits forms); others get one here.
+      if (!this.isNativeButton()) {
+        e.preventDefault()
+        this.el.click()
+      }
     }
   }
 
@@ -384,9 +425,12 @@ export class HingeRuntime {
     if (this.options.reducedMotion) return
     const t = now()
     const spring = this.behavior.drag.spring
+    const pose = this.poseFor(this.state)
     for (const [c, v] of [['x', vx], ['y', vy]] as const) {
+      if (v === 0) continue
       const cur = this.valueOf(c, t)
-      this.segments[c] = { target: 0, x0: cur.value, v0: cur.velocity + v, t0: t, spring, pinned: false, settled: false }
+      const target = pose[c]
+      this.segments[c] = { target, x0: cur.value - target, v0: cur.velocity + v, t0: t, spring, pinned: false, settled: false }
     }
     this.schedule()
   }
@@ -395,7 +439,9 @@ export class HingeRuntime {
     const wasDragging = this.state === 'drag'
     this.keyPressing = false
     if (wasDragging) this.release(false)
-    else if (this.state !== 'rest') this.setState(this.focused ? 'hover' : 'rest')
+    else this.setState(this.restingState())
+    // A cancelled pointer gesture must not turn into an activation.
+    if (this.pointerId !== null) this.suppressClick = true
     this.endPointer()
   }
 

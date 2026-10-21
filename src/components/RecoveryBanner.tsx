@@ -15,7 +15,17 @@ export function RecoveryBanner({ studio }: { studio: Studio }) {
       <div className="banner banner--warn" role="alert">
         <p><strong>Saved projects couldn’t be read.</strong> {recovery.reason} Nothing has been overwritten.</p>
         <button type="button" className="secondary-button" onClick={backup}>Download backup</button>
-        <button type="button" className="primary-button" onClick={() => actions.resolveRecovery('fresh')}>Start fresh</button>
+        <button
+          type="button"
+          className="primary-button"
+          onClick={() => {
+            // Always keep a copy: the data may be from a newer Hinge rather than damaged.
+            backup()
+            actions.resolveRecovery('fresh')
+          }}
+        >
+          Back up &amp; start fresh
+        </button>
       </div>
     )
   }

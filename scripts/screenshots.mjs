@@ -33,7 +33,7 @@ await desk.mouse.up()
 await desk.waitForTimeout(1500)
 
 await desk.getByRole('button', { name: /Magnet/ }).click()
-await desk.getByRole('radio', { name: /Token/ }).click()
+await desk.getByRole('button', { name: /^Token/ }).click()
 await desk.getByRole('tab', { name: /Hover/ }).click()
 box = await card.boundingBox()
 await desk.mouse.move(5, 5)

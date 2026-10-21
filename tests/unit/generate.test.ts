@@ -55,3 +55,17 @@ describe('generateReact', () => {
     expect(() => generateReact(createProject(), broken)).toThrow(/markers/)
   })
 })
+
+describe('generateReact — hostile names', () => {
+  it('names with replacement patterns or line separators cannot alter the code', () => {
+    for (const name of ["A $' B", 'x $& y', 'evil\u2028alert(1)', '*/ alert(1) /*']) {
+      const p = { ...createProject(), name }
+      const tsx = generateReact(p, sources).find((f) => f.path === 'HingeCard.tsx')!.contents
+      const comment = tsx.split('\n').find((l) => l.startsWith('// Tuned in Hinge'))!
+      expect(comment).not.toMatch(/[\u2028\u2029]/)
+      expect(tsx.match(/const BEHAVIOR: HingeBehavior = \{/g)).toHaveLength(1)
+      expect(tsx).not.toContain('alert(1)\n')
+      expect(tsx.startsWith("'use client'\n")).toBe(true)
+    }
+  })
+})

@@ -8,10 +8,19 @@ function App() {
   const Component = CASES[name]
   const [presses, setPresses] = useState(0)
   const [mounted, setMounted] = useState(true)
+  const [submits, setSubmits] = useState(0)
   if (!Component) return <p>Unknown case {name}</p>
   return (
     <>
-      {mounted && <Component onPress={() => setPresses((n) => n + 1)} />}
+      <form
+        onSubmit={(e) => {
+          e.preventDefault()
+          setSubmits((n) => n + 1)
+        }}
+      >
+        {mounted && <Component type="submit" onPress={() => setPresses((n) => n + 1)} />}
+      </form>
+      <output data-testid="submit-count" style={{ position: 'fixed', bottom: 8, right: 8 }}>{submits}</output>
       <button data-testid="toggle" style={{ position: 'fixed', top: 8, left: 8 }} onClick={() => setMounted((m) => !m)}>
         toggle
       </button>

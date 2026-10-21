@@ -219,7 +219,7 @@ test('corrupt storage is reported, kept, and recoverable', async ({ page }) => {
   await expect(page.getByRole('alert')).toContainText('couldn’t be read')
   await expect(page.getByTestId('save-status')).toHaveText('Autosave paused')
   expect(await page.evaluate((key) => localStorage.getItem(key), STORAGE_KEY)).toContain('broken')
-  await page.getByRole('button', { name: 'Start fresh' }).click()
+  await page.getByRole('button', { name: /start fresh/ }).click()
   await expect(page.getByTestId('save-status')).toHaveText(/Saved/)
   expect(await page.evaluate((key) => localStorage.getItem(key), STORAGE_KEY)).not.toContain('broken')
 })
@@ -243,7 +243,7 @@ test('recipes, specimens and projects', async ({ page }) => {
   await fresh(page)
   await page.getByRole('button', { name: /Snap/ }).click()
   await expect(page.getByRole('textbox', { name: 'Stiffness' })).toHaveValue('900')
-  await page.getByRole('radio', { name: /Button/ }).click()
+  await page.getByRole('button', { name: /^Button/ }).click()
   await expect(page.locator(SPECIMEN)).toHaveClass(/hinge-button/)
   await page.getByRole('button', { name: 'Duplicate' }).click()
   await expect(page.locator('.project')).toHaveCount(2)
@@ -263,4 +263,44 @@ test('export dialog shows real code and downloads a zip', async ({ page }) => {
   expect((await download).suggestedFilename()).toBe('HingeCard.zip')
   await page.keyboard.press('Escape')
   await expect(dialog).toBeHidden()
+})
+
+test('a keyboard flick keeps the hover pose (rise) while it springs home', async ({ page }) => {
+  await fresh(page)
+  await page.locator(SPECIMEN).focus()
+  await page.waitForTimeout(900)
+  await page.keyboard.press('ArrowRight')
+  await page.waitForTimeout(1500)
+  const t = await transformOf(page)
+  expect(t.x).toBeCloseTo(0, 0)
+  expect(t.y).toBeCloseTo(-10, 0)
+})
+
+test('grabbing the specimen mid-glide continues from where it is', async ({ page }) => {
+  await fresh(page)
+  const c = await center(page)
+  await page.mouse.move(c.x, c.y)
+  await page.mouse.down()
+  await page.mouse.move(c.x + 100, c.y, { steps: 8 })
+  await page.waitForTimeout(300)
+  await page.mouse.up()
+  await page.waitForTimeout(60)
+  const before = (await transformOf(page)).x
+  expect(before).toBeGreaterThan(20)
+  // Grab it again where it now is and nudge past the drag threshold.
+  await page.mouse.down()
+  await page.mouse.move(c.x + 106, c.y, { steps: 2 })
+  const after = (await transformOf(page)).x
+  expect(Math.abs(after - before)).toBeLessThan(15)
+  await page.mouse.up()
+})
+
+test('blur while the pointer is over the specimen keeps it hovered', async ({ page }) => {
+  await fresh(page)
+  const c = await center(page)
+  await page.mouse.move(c.x, c.y)
+  await page.keyboard.press('Tab') // move focus somewhere; the specimen may or may not receive it
+  await page.locator(SPECIMEN).focus()
+  await page.locator(SPECIMEN).blur()
+  await expect(page.getByTestId('live-state')).toHaveText('hover')
 })

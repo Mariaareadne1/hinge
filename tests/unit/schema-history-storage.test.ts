@@ -122,3 +122,17 @@ describe('storage', () => {
     expect(saveLibrary({ projects: [p], currentId: p.id }, store)).toEqual({ ok: false, reason: 'Browser storage is full.' })
   })
 })
+
+describe('storage keeps what it cannot read', () => {
+  it('writes unreadable entries back untouched', () => {
+    const good = createProject()
+    const future = { version: 7, specimen: 'card', fancy: true }
+    const store = memory({ [STORAGE_KEY]: JSON.stringify({ projects: [good, future], currentId: good.id }) })
+    const r = loadLibrary(store)
+    if (r.status !== 'ok') throw new Error('expected ok')
+    saveLibrary({ ...r.library, projects: [{ ...good, name: 'Edited' }] }, store)
+    const saved = JSON.parse(store.data[STORAGE_KEY]!)
+    expect(saved.projects).toHaveLength(2)
+    expect(saved.projects[1]).toEqual(future)
+  })
+})

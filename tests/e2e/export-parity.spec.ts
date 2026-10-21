@@ -20,7 +20,7 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), '../..')
 const FIXTURE_PORT = 5409
 const FIXTURE_URL = `http://localhost:${FIXTURE_PORT}`
 const STAGE = '[data-testid="stage-specimen"] > *'
-const EXPORTED = '#root > [class^="hinge-"]'
+const EXPORTED = '#root form > [class^="hinge-"]'
 
 function readSources(): ExportSources {
   const r = (p: string) => readFileSync(join(ROOT, 'src', p), 'utf8')
@@ -41,7 +41,8 @@ function makeCases(): Record<string, HingeProject> {
   const b = createProject({ specimen: 'token', recipe: 'magnet', name: 'Parity B' })
   b.behavior.drag.spring = { stiffness: 320, damping: 9, mass: 0.9 }
   b.behavior.press.spring = { stiffness: 900, damping: 60, mass: 1 }
-  return { a, b }
+  const c = createProject({ specimen: 'button', recipe: 'snap', name: 'Parity C' })
+  return { a, b, c }
 }
 
 const cases = makeCases()
@@ -71,7 +72,7 @@ test.beforeAll(async () => {
   writeFileSync(
     join(fixtureDir, 'src/generated/cases.ts'),
     `import type { ComponentType } from 'react'\n${imports.join('\n')}\n\n` +
-      `export const CASES: Record<string, ComponentType<{ onPress?: () => void }>> = {\n${entries.join('\n')}\n}\n`,
+      `export const CASES: Record<string, ComponentType<{ onPress?: () => void; type?: 'submit' }>> = {\n${entries.join('\n')}\n}\n`,
   )
   const run = (cmd: string, args: string[]) =>
     buildLog.push(execFileSync(cmd, args, { cwd: fixtureDir, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }))
@@ -280,4 +281,30 @@ test('mount / unmount leaves no running animation or window listeners', async ({
   })
   expect(counts.rafDuringIdle).toBe(0)
   expect(counts.blurListeners).toBe(baseline - 1)
+})
+
+test('exported button submits its form from mouse, Enter and Space; drags never submit', async ({ page }) => {
+  await openFixture(page, 'c')
+  const button = page.locator(EXPORTED)
+  await expect(button).toHaveJSProperty('tagName', 'BUTTON')
+  await button.click()
+  await button.focus()
+  await page.keyboard.press('Enter')
+  await page.keyboard.press('Space')
+  await expect(page.getByTestId('submit-count')).toHaveText('3')
+  await expect(page.getByTestId('press-count')).toHaveText('3')
+})
+
+test('assistive-tech style activation (element.click()) calls onPress on role=button exports', async ({ page }) => {
+  await openFixture(page, 'a')
+  await page.locator(EXPORTED).evaluate((el) => (el as HTMLElement).click())
+  await expect(page.getByTestId('press-count')).toHaveText('1')
+  // A drag that ends over the element is not a click.
+  const c = await centerOf(page, EXPORTED)
+  await page.mouse.move(c.x, c.y)
+  await page.mouse.down()
+  await page.mouse.move(c.x + 60, c.y, { steps: 6 })
+  await page.mouse.up()
+  await page.waitForTimeout(300)
+  await expect(page.getByTestId('press-count')).toHaveText('1')
 })

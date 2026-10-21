@@ -17,9 +17,16 @@ the editor tests only).
 
 ## Test results (2026-10-21)
 - `pnpm typecheck` ✓ · `pnpm lint` ✓ · `pnpm build` ✓
-- `pnpm test` 30/30
-- `pnpm test:e2e` editor 13/13 Chromium + 13/13 WebKit; export-parity 6/6 Chromium
-  (full suite ×2 repeats: 64/64)
+- `pnpm test` 32/32
+- `pnpm test:e2e` editor 16/16 Chromium + 16/16 WebKit; export-parity 8/8 Chromium
+
+## Independent review (2026-10-21) — fixed
+Keyboard flick reset the hover pose; activation now uses the native click (form submit, AT, el.click());
+project names can't inject into generated code ($-patterns, U+2028); unreadable saved projects are
+written back untouched; no autosave until something changes; cross-tab writes pause autosave;
+modifier+arrow no longer swallowed; grabbing mid-glide no longer snaps; blur with pointer inside keeps
+hover; no-op undo steps removed; Start fresh always downloads a backup first; 'use client' in exports;
+settleTime bounded to ~4000 evaluations. Not changed: graph handle silently clamps (documented).
 
 ## Known gaps / unverified
 - Real touch hardware, Firefox, iOS Safari, screen readers not tested.

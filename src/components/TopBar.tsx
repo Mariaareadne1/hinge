@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import type { Studio } from '../state/useStudio'
+import { sanitizeName } from '../domain/schema'
 
 interface TopBarProps {
   studio: Studio
@@ -18,7 +19,8 @@ export function TopBar({ studio, onExport }: TopBarProps) {
     : `Not saved — ${saveStatus.reason}`
 
   const commitName = () => {
-    if (name.trim() && name !== project.name) actions.push({ ...project, name })
+    const clean = sanitizeName(name)
+    if (name.trim() && clean !== project.name) actions.push({ ...project, name: clean })
     else setName(project.name)
   }
 

@@ -51,21 +51,21 @@ Three starting recipes feel physically different, not just numerically:
 | --- | --- | --- |
 | Types, strict | `pnpm typecheck` | pass |
 | Lint | `pnpm lint` | pass |
-| Unit — spring math, schema, history, storage, codegen, zip | `pnpm test` | 30 / 30 |
-| Editor E2E — Chromium **and** WebKit | `pnpm test:e2e --grep-invert parity` | 13 / 13 per engine, stable over repeats |
-| Export parity — Chromium | `pnpm test:e2e export-parity` | 6 / 6 |
+| Unit — spring math, schema, history, storage, codegen, zip | `pnpm test` | 32 / 32 |
+| Editor E2E — Chromium **and** WebKit | `pnpm test:e2e --grep-invert parity` | 16 / 16 per engine |
+| Export parity — Chromium | `pnpm test:e2e export-parity` | 8 / 8 |
 
 **Export parity, concretely.** The test generates two components from two different projects (a Lift card with a custom hover spring and pose; a Magnet token with custom drag and press springs), writes them into a fresh Vite + React app in a temporary directory *outside* this repository, installs only the declared dependencies, type-checks and builds it, and serves it. It then drives the editor stage and the exported component with identical input and records the element's computed transform every frame:
 
 | Motion | Largest raw difference, editor vs export |
 | --- | --- |
-| A — hover rise (y) | 0.29 px |
-| A — hover scale / rotate | 0.001 / 0.04° |
+| A — hover rise (y) | 0.23 px |
+| A — hover scale / rotate | 0.001 / 0.03° |
 | A — press scale | 0.001 |
-| A — drag release (x, from 100 px) | 0.22 px |
-| B — keyboard flick (x, 900 px/s impulse) | 0.40 px |
+| A — drag release (x, from 100 px) | 0.07 px |
+| B — keyboard flick (x, 900 px/s impulse) | 0.43 px |
 
-Both are also checked against the analytic model, and the exported component is checked for touch tap, Enter/Space activation, ARIA roles, reduced motion (every frame is either the rest or the target pose, never in between) and for leaks: ten mount/unmount cycles mid-animation leave no `requestAnimationFrame` running and no window listeners behind.
+Both are also checked against the analytic model, and the exported components are checked for touch tap, Enter/Space activation, a `type="submit"` button submitting its form by mouse, Enter and Space (drags never activate), `element.click()` activation as assistive tech uses it, ARIA roles, reduced motion (every frame is either the rest or the target pose, never in between) and for leaks: ten mount/unmount cycles mid-animation leave no `requestAnimationFrame` running and no window listeners behind.
 
 *How the tolerances are defined:* a recorder samples on its own animation frame, so each value can be read up to a frame after it was written. Comparisons fit one latency offset (≤ 34 ms) and allow deviation of |slope| × 1/60 s per sample; the raw numbers above are with **no** such allowance. Tests that measure absolute time on a heavily loaded machine are the most sensitive — they passed on repeat, but this is a machine that is often busy.
 

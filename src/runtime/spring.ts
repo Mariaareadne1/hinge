@@ -129,7 +129,8 @@ export function settleTime(p: SpringParams, tolerance = 0.01): number {
   // Slowest decay rate bounds how long we need to scan.
   const slowest = z < 1 ? z * w : w * (z - Math.sqrt(Math.max(0, z * z - 1)))
   const horizon = Math.min(600, Math.max(0.05, (Math.log(1 / tolerance) + 3) / Math.max(slowest, 1e-6)))
-  const dt = Math.min(1 / 960, horizon / 4000)
+  // At most ~4000 evaluations; resolution is never coarser than horizon / 4000.
+  const dt = Math.max(1 / 960, horizon / 4000)
   let last = 0
   for (let t = 0; t <= horizon; t += dt) {
     if (Math.abs(springAt(p, -1, 0, t).x) > tolerance) last = t

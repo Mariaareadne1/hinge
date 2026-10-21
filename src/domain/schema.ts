@@ -115,7 +115,7 @@ export function createProject(
 export function sanitizeName(raw: unknown): string {
   const text = typeof raw === 'string' ? raw : ''
   // eslint-disable-next-line no-control-regex
-  const clean = text.replace(/[\u0000-\u001f\u007f<>]/g, '').replace(/\s+/g, ' ').trim().slice(0, 48)
+  const clean = text.replace(/[\u0000-\u001f\u007f\u2028\u2029<>]/g, '').replace(/\s+/g, ' ').trim().slice(0, 48)
   return clean || 'Untitled'
 }
 

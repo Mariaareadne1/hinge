@@ -28,7 +28,7 @@ export function Shelf({ studio }: ShelfProps) {
     <aside className="shelf" aria-label="Specimens and projects">
       <section className="shelf__section">
         <h2 className="shelf__heading">Specimen</h2>
-        <div className="shelf__specimens" role="radiogroup" aria-label="Specimen">
+        <div className="shelf__specimens" role="group" aria-label="Specimen">
           {SPECIMENS.map((s) => (
             <SpecimenButton key={s.kind} kind={s.kind} label={s.label} note={s.note} active={project.specimen === s.kind}
               onSelect={() => actions.setSpecimen(project, s.kind)} />
@@ -79,7 +79,7 @@ export function Shelf({ studio }: ShelfProps) {
 
 function SpecimenButton({ kind, label, note, active, onSelect }: { kind: SpecimenKind; label: string; note: string; active: boolean; onSelect: () => void }) {
   return (
-    <button type="button" role="radio" aria-checked={active} className={`specimen-pick${active ? ' is-on' : ''}`} onClick={onSelect} data-kind={kind}>
+    <button type="button" aria-pressed={active} className={`specimen-pick${active ? ' is-on' : ''}`} onClick={onSelect} data-kind={kind}>
       <span className={`specimen-pick__glyph specimen-pick__glyph--${kind}`} aria-hidden="true" />
       <span className="specimen-pick__text">
         <span className="specimen-pick__label">{label}</span>

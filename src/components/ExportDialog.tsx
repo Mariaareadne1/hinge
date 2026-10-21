@@ -69,9 +69,9 @@ export function ExportDialog({ project, onClose }: ExportDialogProps) {
         <p className="export__error" role="alert">Export failed: {result.error}</p>
       ) : (
         <>
-          <div className="export__tabs" role="tablist" aria-label="Exported files">
+          <div className="export__tabs" role="group" aria-label="Exported files">
             {result.files.map((f, i) => (
-              <button key={f.path} type="button" role="tab" aria-selected={i === active} className={`export__tab${i === active ? ' is-on' : ''}`} onClick={() => setActive(i)}>
+              <button key={f.path} type="button" aria-pressed={i === active} className={`export__tab${i === active ? ' is-on' : ''}`} onClick={() => setActive(i)}>
                 {f.path}
               </button>
             ))}
