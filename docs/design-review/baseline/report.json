@@ -1,0 +1,169 @@
+{
+  "label": "baseline",
+  "url": "http://localhost:5401/",
+  "takenAt": "2026-10-26T02:16:24.924Z",
+  "engines": {
+    "chromium": {
+      "version": "156.0.8078.4",
+      "viewports": {
+        "1440x900": {
+          "horizontalOverflow": false,
+          "pageHeight": 900,
+          "specimen": {
+            "x": 530,
+            "y": 329,
+            "w": 280,
+            "h": 279
+          },
+          "stage": {
+            "w": 802,
+            "h": 628,
+            "shareOfViewport": 0.39
+          },
+          "tabOrder": [
+            "a \"Skip to inspector\"",
+            "input \"\"",
+            "button \"Export component\"",
+            "button \"CardHover lift, press, drag & re\"",
+            "button \"ButtonHover and press, no drag\"",
+            "button \"TokenA chip built to be thrown\"",
+            "button \"LiftSoft rise, gentle settle\"",
+            "button \"SnapFast, exact, no wobble\"",
+            "button \"MagnetShort leash, bouncy return\"",
+            "button \"New\"",
+            "button \"Lift Cardcard\"",
+            "button \"Delete Lift Card\"",
+            "button \"Duplicate\"",
+            "button \"Import config…\""
+          ]
+        },
+        "1280x800": {
+          "horizontalOverflow": false,
+          "pageHeight": 800,
+          "specimen": {
+            "x": 450,
+            "y": 279,
+            "w": 280,
+            "h": 279
+          },
+          "stage": {
+            "w": 642,
+            "h": 528,
+            "shareOfViewport": 0.33
+          }
+        },
+        "768x1024": {
+          "horizontalOverflow": false,
+          "pageHeight": 2437,
+          "specimen": {
+            "x": 244,
+            "y": 243,
+            "w": 280,
+            "h": 279
+          },
+          "stage": {
+            "w": 736,
+            "h": 380,
+            "shareOfViewport": 0.36
+          }
+        },
+        "390x844": {
+          "horizontalOverflow": false,
+          "pageHeight": 2357,
+          "specimen": {
+            "x": 75,
+            "y": 332,
+            "w": 240,
+            "h": 279
+          },
+          "stage": {
+            "w": 358,
+            "h": 410,
+            "shareOfViewport": 0.45
+          }
+        }
+      }
+    },
+    "webkit": {
+      "version": "27.2",
+      "viewports": {
+        "1440x900": {
+          "horizontalOverflow": false,
+          "pageHeight": 900,
+          "specimen": {
+            "x": 530,
+            "y": 329,
+            "w": 280,
+            "h": 279
+          },
+          "stage": {
+            "w": 802,
+            "h": 628,
+            "shareOfViewport": 0.39
+          },
+          "tabOrder": [
+            "input \"\"",
+            "div[button] \"Porcelain\"",
+            "button[tab] \"02Hoverpointer over · keyboard f\"",
+            "g[slider] \"Peak handle: arrow left and righ\"",
+            "input \"\"",
+            "input \"\"",
+            "input \"\"",
+            "input \"\"",
+            "input \"\"",
+            "input \"\"",
+            "input \"\"",
+            "body \"Skip to inspectorHingean instrum\"",
+            "input \"\"",
+            "div[button] \"Porcelain\""
+          ]
+        },
+        "1280x800": {
+          "horizontalOverflow": false,
+          "pageHeight": 800,
+          "specimen": {
+            "x": 450,
+            "y": 279,
+            "w": 280,
+            "h": 279
+          },
+          "stage": {
+            "w": 642,
+            "h": 528,
+            "shareOfViewport": 0.33
+          }
+        },
+        "768x1024": {
+          "horizontalOverflow": false,
+          "pageHeight": 2437,
+          "specimen": {
+            "x": 244,
+            "y": 243,
+            "w": 280,
+            "h": 279
+          },
+          "stage": {
+            "w": 736,
+            "h": 380,
+            "shareOfViewport": 0.36
+          }
+        },
+        "390x844": {
+          "horizontalOverflow": false,
+          "pageHeight": 2357,
+          "specimen": {
+            "x": 75,
+            "y": 332,
+            "w": 240,
+            "h": 279
+          },
+          "stage": {
+            "w": 358,
+            "h": 410,
+            "shareOfViewport": 0.45
+          }
+        }
+      }
+    }
+  }
+}
