@@ -1,0 +1,51 @@
+/* H1 composition studies — temporary. */
+.study { --bone: #f3f2ec; --ink: #171813; --citron: #d8f24a; --hair: rgba(23, 24, 19, 0.12);
+  height: 100vh; display: flex; flex-direction: column; background: var(--bone); color: var(--ink); overflow: hidden; }
+.s-mast { display: grid; grid-template-columns: auto auto 1fr auto; align-items: baseline; gap: 24px; padding: 14px 24px 10px; border-bottom: 1px solid var(--ink); }
+.s-mast__mark { font-weight: 700; font-size: 28px; letter-spacing: -0.04em; line-height: 0.9; position: relative; }
+.s-mast__notch { position: absolute; left: 0; right: 0; bottom: -11px; height: 3px; background: var(--citron); }
+.s-mast__sub, .s-mast__status { font-family: var(--mono); font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; }
+.s-mast__status { justify-self: end; color: rgba(23, 24, 19, 0.6); }
+.s-mast__export { background: var(--ink); color: var(--bone); border: 0; padding: 8px 16px; font-weight: 600; }
+.study__stage { position: relative; flex: 1; min-height: 0; }
+.study .stage { position: absolute; inset: 0; margin: 0; border: 0; border-radius: 0; background: var(--bone); }
+.study .stage__crosshair { background: rgba(23, 24, 19, 0.08); }
+.s-spec { position: absolute; z-index: 2; top: 18px; left: 24px; display: flex; gap: 0; border: 1px solid var(--ink); }
+.s-spec button { border: 0; background: none; padding: 6px 12px; font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: 0.04em; }
+.s-spec .is-on { background: var(--ink); color: var(--bone); }
+.s-rail { display: flex; }
+.s-rail__cell { position: relative; border: 0; background: none; text-align: left; font-weight: 700; font-size: 20px; letter-spacing: -0.02em; padding: 10px 14px; border-left: 1px solid var(--hair); }
+.s-rail__n { display: block; font-family: var(--mono); font-size: 10px; font-weight: 400; }
+.s-rail__cell.is-sel { background: var(--ink); color: var(--bone); }
+.s-rail__cell.is-live::after { content: ''; position: absolute; top: 10px; right: 10px; width: 8px; height: 8px; background: var(--citron); outline: 1px solid var(--ink); }
+.study .graph { border: 0; border-radius: 0; background: transparent; padding: 0; }
+.study .scrub__range::-webkit-slider-runnable-track { background: linear-gradient(to right, var(--ink) 0 var(--fill), var(--hair) var(--fill) 100%); height: 2px; }
+.study .scrub__range::-webkit-slider-thumb { border-radius: 0; width: 10px; height: 18px; margin-top: -8px; border-color: var(--ink); }
+
+/* A — stage over a horizontal console */
+.study--a .study__console { flex: none; height: 260px; display: grid; grid-template-columns: auto 1fr 420px; border-top: 1px solid var(--ink); }
+.study--a .s-rail { flex-direction: column; border-right: 1px solid var(--ink); }
+.study--a .s-rail__cell { border-left: 0; border-bottom: 1px solid var(--hair); width: 140px; flex: 1; }
+.study--a .study__fields { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; padding: 20px 24px; align-content: start; }
+.study--a .study__graph { border-left: 1px solid var(--ink); padding: 14px 18px; }
+.study--a .graph__stats { display: none; }
+
+/* B — full-bleed stage, vertical rail, corner instrument */
+.study--b .s-rail { position: absolute; z-index: 2; left: 24px; top: 50%; transform: translateY(-50%); flex-direction: column; border-left: 2px solid var(--ink); }
+.study--b .s-rail__cell { border-left: 0; padding: 8px 14px 8px 16px; font-size: 26px; }
+.study--b .study__instrument { position: absolute; z-index: 2; right: 24px; bottom: 24px; width: 380px; background: rgba(243, 242, 236, 0.94); border: 1px solid var(--ink); padding: 14px 16px; display: grid; gap: 10px; }
+.study--b .study__fields { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+.study--b .scrub__hint { display: none; }
+
+@media (max-width: 900px) {
+  .study { height: auto; min-height: 100vh; overflow: visible; }
+  .study__stage { min-height: 62vh; flex: none; }
+  .study--a .study__console { height: auto; grid-template-columns: 1fr; }
+  .study--a .s-rail { flex-direction: row; }
+  .study--a .s-rail__cell { width: auto; }
+  .study--a .study__fields { grid-template-columns: 1fr; }
+  .study--b .s-rail { top: auto; bottom: 12px; left: 12px; right: 12px; transform: none; flex-direction: row; border-left: 0; border-top: 2px solid var(--ink); }
+  .study--b .s-rail__cell { font-size: 15px; flex: 1; }
+  .study--b .study__instrument { position: static; width: auto; margin: 0; border-width: 1px 0 0; }
+  .study--b .study__fields { grid-template-columns: 1fr; }
+}

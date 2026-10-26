@@ -40,3 +40,22 @@ inside the 350 ms autosave delay.
 Frame-sampled recordings jitter by up to a frame. Comparisons fit one latency (≤ 34 ms) and allow
 |slope| × 1/60 s per sample; raw differences are printed alongside. A pixel threshold that ignores slope
 reported 6 px "errors" on a 1300 px/s release that matched the model to 0.04 px once timing was accounted for.
+
+## D8 — Redesign composition: full-bleed stage, vertical rail, corner instrument (study B)
+Two studies were built as dev-only routes on the real Stage / SpringGraph / ScrubField
+(`docs/design-review/h1-studies/`). **A** — stage over a 260 px horizontal console — gave the stage 64 % of a
+1440×900 viewport, kept every control on screen, and never occluded the specimen, but the console read as a
+settings dashboard: a fixed band of mostly-empty fields that competes with the object for attention.
+**B** — full-bleed stage, poster-scale state rail on the left edge, inset spring instrument in the lower right —
+gave the stage 93 % of the viewport and made the state rail part of the workspace rather than a sidebar.
+Its risk was occlusion: at 1280 px a card dragged right would pass under the instrument. Chosen: **B**, with
+the specimen optically centred in the free area between rail and instrument (not the stage centre), the
+instrument collapsible to a one-line summary, and A's stacking order borrowed for phones (stage → rail →
+bottom sheet). The instrument is an ink panel so the bone-on-ink model curve and citron measured trace read
+as an instrument, distinct from the stage.
+
+## D9 — A relative scrub control instead of native range inputs
+Native ranges jump the thumb to the click point on first contact, and their look is hard to make consistent
+in WebKit and Chromium. ScrubField now draws its own `role="slider"`: pointer drags are relative to where the
+gesture began (no jump), Shift scrubs 10× finer, arrow keys step, Home/End go to limits, and the typed field
+remains for exact entry. One gesture is still one undo step.
