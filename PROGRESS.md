@@ -122,8 +122,15 @@ the specimen is the 5th tab stop (was beyond the 14th).
 - Export parity port 5409 is still fixed (it has not collided yet); the ZIP test's approach could be applied to it.
 - The graph handle cannot produce ζ ≥ 1 (by construction: no peak); use Damping.
 
+### H5 — launch (done)
+Pushed `307d0a4` to `main` (`git ls-remote` confirmed). Actions run 40276004070: build ✓, e2e (Chromium, Ubuntu,
+includes parity + ZIP round trip) ✓, deploy ✓. Live check of https://mariaareadne1.github.io/hinge/ in Chromium and
+WebKit: new title and `/hinge/` asset paths served, specimen renders, hover reports `live=hover` with 46 measured
+trace dots, export bench shows generated code, no page errors or failed requests.
+
 ### Next safe step
-Push, confirm the Pages deploy for the pushed HEAD, check the live URL.
+Candidates: A/B compare of two configs on one stage; React 18.2 fixture run; free-port the parity fixture too;
+real-device touch pass (iPhone Safari) and a VoiceOver walkthrough.
 ---
 
 ## History — original build (2026-10-21)
