@@ -1,18 +1,20 @@
-/* HingeCard — the transform and --hinge-lift are written by the Hinge runtime. */
+/* HingeCard — the transform and --hinge-lift are written by the Hinge runtime.
+   Theme hooks: --hinge-focus (focus ring), --hinge-accent (pin). */
 .hinge-card {
   --hinge-lift: 0;
   box-sizing: border-box;
-  width: 280px;
-  padding: 18px 18px 20px;
-  border-radius: 14px;
-  background: #fbfaf6;
-  color: #1b1c1e;
+  width: 300px;
+  max-width: 100%;
+  padding: 14px 14px 18px;
+  border-radius: 6px;
+  background: #faf9f5;
+  color: #171813;
   font-family: inherit;
-  border: 1px solid rgba(27, 28, 30, 0.1);
+  border: 1px solid rgba(23, 24, 19, 0.14);
   box-shadow:
-    0 1px 1px rgba(27, 28, 30, 0.06),
-    0 calc(2px + var(--hinge-lift) * 18px) calc(6px + var(--hinge-lift) * 30px)
-      calc(var(--hinge-lift) * -6px) rgba(27, 28, 30, calc(0.08 + var(--hinge-lift) * 0.14));
+    0 1px 1px rgba(23, 24, 19, 0.06),
+    0 calc(2px + var(--hinge-lift) * 20px) calc(6px + var(--hinge-lift) * 34px)
+      calc(var(--hinge-lift) * -8px) rgba(23, 24, 19, calc(0.08 + var(--hinge-lift) * 0.16));
   cursor: grab;
   user-select: none;
   -webkit-user-select: none;
@@ -21,25 +23,25 @@
 }
 .hinge-card[data-hinge-state='press'],
 .hinge-card[data-hinge-state='drag'] { cursor: grabbing; }
-.hinge-card:focus-visible { box-shadow: 0 0 0 3px #fbfaf6, 0 0 0 5px #2a44d4; }
+.hinge-card:focus-visible { outline: 2px solid var(--hinge-focus, #171813); outline-offset: 4px; }
 .hinge-card__plate {
-  height: 128px;
-  border-radius: 9px;
+  height: 148px;
+  border-radius: 3px;
   background:
-    repeating-linear-gradient(90deg, rgba(42, 68, 212, 0.07) 0 1px, transparent 1px 12px),
-    linear-gradient(160deg, #eef0fb, #e4e7f6);
+    repeating-linear-gradient(90deg, rgba(243, 242, 236, 0.09) 0 1px, transparent 1px 12px),
+    #171813;
   display: grid;
   place-items: center;
   margin-bottom: 16px;
 }
-.hinge-card__mark { width: 120px; height: 80px; fill: none; stroke: #2a44d4; stroke-width: 1.25; }
-.hinge-card__pin { fill: #2a44d4; stroke: none; }
+.hinge-card__mark { width: 132px; height: 88px; fill: none; stroke: #f3f2ec; stroke-width: 1.25; }
+.hinge-card__pin { fill: var(--hinge-accent, #d8f24a); stroke: none; }
 .hinge-card__eyebrow {
-  margin: 0 0 6px;
+  margin: 0 2px 6px;
   font-size: 11px;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: rgba(27, 28, 30, 0.55);
+  color: rgba(23, 24, 19, 0.6);
 }
-.hinge-card__title { margin: 0 0 6px; font-size: 24px; line-height: 1.1; font-weight: 500; }
-.hinge-card__body { margin: 0; font-size: 14px; line-height: 1.45; color: rgba(27, 28, 30, 0.7); }
+.hinge-card__title { margin: 0 2px 6px; font-size: 26px; line-height: 1.05; font-weight: 700; letter-spacing: -0.03em; }
+.hinge-card__body { margin: 0 2px; font-size: 14px; line-height: 1.45; color: rgba(23, 24, 19, 0.74); }

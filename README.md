@@ -1,21 +1,21 @@
-# Hinge
+# Hinge — the Motion Workshop
 
 **An instrument for designing interface motion.** Tune how a component behaves — hover, press, drag and release — by handling it and shaping its spring, then export a working React + TypeScript component that moves exactly the way it did on the stage.
 
 > What you feel in Hinge is what you ship.
 
-![Hinge with the Magnet recipe on a token: the measured motion (orange dots) lies on the model curve](docs/media/hinge-token-magnet.png)
+![The Motion Workshop: a full-bleed stage, the state rail on the left, the spring instrument in the corner with the measured motion (citron dots) on the model curve](docs/media/hinge-hover.png)
 
 **Live:** https://mariaareadne1.github.io/hinge/ · **Source:** this repository · MIT
 
 ## What it does
 
-1. **Play with a specimen.** A card, a button or a draggable token sits on the stage. Hover it, press it, drag it and throw it — with a mouse, a finger, or the keyboard (Tab to focus, Space/Enter to press, arrow keys to flick).
-2. **Pick a state in the Behavior Strip** — Hover, Press, Drag — and the inspector shows that state's pose and spring. The strip's lamp shows the live state as you play.
-3. **Shape the spring.** Edit stiffness, damping and mass with sliders or typed values, or grab the peak of the response curve and drag it: left/right moves when it peaks, up/down sets how far it overshoots.
-4. **See it measured.** The graph draws the model, then overlays dots read from the specimen's actual on-screen transform each frame. They land on the curve.
-5. **Save, undo, branch.** Projects autosave locally; undo/redo treats a whole slider drag as one step; duplicate, rename, import and export configs.
-6. **Export.** Copy any file or download a zip: `HingeCard.tsx`, its CSS, the runtime (`hinge/spring.ts`, `hinge/runtime.ts`, `hinge/useHinge.ts`), `hinge.config.json` and a README. The only dependency is React.
+1. **Touch the object.** One specimen — a card, a button or a draggable token — sits on a full-bleed stage. Hover it, press it, drag it and throw it with a mouse, a finger or the keyboard (Tab to focus, Space/Enter to press, arrow keys to flick). *Object* and *Feel* (Lift, Snap, Magnet) sit in the stage's corner.
+2. **Pick a state on the rail** — Rest · Hover · Press · Drag, poster-size on the stage's left edge (keys 2/3/4). The ink block is the state you are editing; the citron mark is the state the object is in right now. The two never get confused.
+3. **Shape the spring in the instrument** (lower right, collapsible). Grab the peak of the response curve: left/right moves when it peaks, up/down sets how far it overshoots — the time axis holds still while you drag, so the peak stays under your pointer. Or scrub Stiffness, Damping and Mass: scrub tracks move relative to where you grab (no jump), Shift is 10× finer, and every value can be typed. *Pose* / *Drag* shows only the knobs for the selected state.
+4. **See it measured.** The curve is the model; the citron dots are read from the specimen's actual on-screen transform each frame. Hover the graph for exact values at any time.
+5. **Save, undo, branch.** Projects autosave locally; a whole scrub or handle drag is one undo step; the Library duplicates, imports and deletes projects.
+6. **Export** opens the export bench, a separate dark mode with the real generated files. Copy any file or download a zip: `HingeCard.tsx`, its CSS, the runtime (`hinge/spring.ts`, `hinge/runtime.ts`, `hinge/useHinge.ts`), `hinge.config.json` and a README. The only dependency is React.
 
 Three starting recipes feel physically different, not just numerically:
 
@@ -45,19 +45,32 @@ Three starting recipes feel physically different, not just numerically:
 - **One runtime, everywhere.** The stage renders the specimen components in `src/specimens/`; an export is that same source with the behavior import replaced by the tuned values and the runtime files copied byte-for-byte. Nothing in an export imports Hinge.
 - **Motion that stays continuous.** Changing state re-seeds each channel's spring from its current position *and velocity*; channels whose target doesn't change keep the spring already in flight (so a release gliding home isn't hijacked by a hover change). The frame loop runs only while something is moving.
 
+## Layout
+
+| | |
+| --- | --- |
+| ![Dragging the card: the held object rides above the instrument](docs/media/hinge-drag.png) | ![The export bench](docs/media/hinge-export.png) |
+| ![Phone: stage, rail, collapsed instrument](docs/media/hinge-mobile.png) | ![Phone: the tuning sheet](docs/media/hinge-mobile-tune.png) |
+
+Under 900 px the workshop restacks instead of shrinking: stage, then the rail as a row, with the instrument as a bottom sheet (safe-area padded, collapsible, never covering the masthead). Short screens scroll instead of clipping. Why this composition and not a console under the stage: [DECISIONS.md D8](DECISIONS.md); before/after captures in [docs/design-review/](docs/design-review/).
+
 ## Verification
 
-| Check | Command | Result (2026-10-21, macOS 26.4, M2 Pro) |
-| --- | --- | --- |
-| Types, strict | `pnpm typecheck` | pass |
-| Lint | `pnpm lint` | pass |
-| Unit — spring math, schema, history, storage, codegen, zip | `pnpm test` | 32 / 32 |
-| Editor E2E — Chromium **and** WebKit | `pnpm test:e2e --grep-invert parity` | 16 / 16 per engine |
-| Export parity — Chromium | `pnpm test:e2e export-parity` | 8 / 8 |
+See [PROGRESS.md](PROGRESS.md) for the latest dated results. Commands:
+
+| Check | Command |
+| --- | --- |
+| Types, strict | `pnpm typecheck` |
+| Lint | `pnpm lint` |
+| Unit — spring math, graph-handle reachability, schema, history, storage, codegen, zip | `pnpm test` |
+| Editor + accessibility (axe, WCAG 2.2 AA rules) E2E — Chromium **and** WebKit | `pnpm test:e2e --grep-invert "parity|zip"` |
+| Export parity + ZIP round trip — Chromium | `pnpm test:export` |
+
+**ZIP round trip.** A separate test tunes a project, downloads the `.zip` through the export bench as a user would, unpacks it into a fresh Vite + React app outside the repository, type-checks, builds and serves it, and compares its hover and drag-release motion with the stage.
 
 **Export parity, concretely.** The test generates two components from two different projects (a Lift card with a custom hover spring and pose; a Magnet token with custom drag and press springs), writes them into a fresh Vite + React app in a temporary directory *outside* this repository, installs only the declared dependencies, type-checks and builds it, and serves it. It then drives the editor stage and the exported component with identical input and records the element's computed transform every frame:
 
-| Motion | Largest raw difference, editor vs export |
+| Motion | Largest raw difference, editor vs export (2026-10-21 run) |
 | --- | --- |
 | A — hover rise (y) | 0.23 px |
 | A — hover scale / rotate | 0.001 / 0.03° |
@@ -73,7 +86,9 @@ Both are also checked against the analytic model, and the exported components ar
 
 ## Accessibility
 
-Specimens are focusable with `role="button"` (the Button is a real `<button>`); Enter/Space press and activate; keyboard focus — not click focus — stands in for hover; arrow keys give the draggable specimens a flick through the same release spring; every slider has a typed numeric equivalent with validation; the graph handle is a keyboard-operable `slider`; reduced motion is honoured from the OS and can be previewed with a toggle.
+Specimens are focusable with `role="button"` (the Button is a real `<button>`); Enter/Space press and activate; keyboard focus — not click focus — stands in for hover; arrow keys give the draggable specimens a flick through the same release spring; every scrub track is a keyboard-operable `slider` (arrows, Shift ×10, Page, Home/End) with a typed numeric equivalent and validation; the graph handle is a keyboard-operable `slider`; the rail is a vertical tablist controlling the instrument; dialogs return focus to the control that opened them; routine saves are silent to screen readers while save failures are announced; reduced motion is honoured from the OS and can be previewed with a toggle (it removes the editor's decorative transitions too). axe runs against the workshop, the drag tuning, the library, the export bench and the phone sheet in both engines.
+
+Exported specimens expose `--hinge-focus` and `--hinge-accent` so a host page can keep the focus ring visible on any background.
 
 ## Run it
 
@@ -81,7 +96,9 @@ Specimens are focusable with `role="button"` (the Button is a real `<button>`); 
 pnpm install
 pnpm dev            # http://localhost:5401
 pnpm test           # unit
-pnpm test:e2e       # Playwright: editor in Chromium + WebKit, export parity in Chromium
+pnpm test:e2e       # Playwright: editor + a11y in Chromium and WebKit; export parity + zip in Chromium
+pnpm test:export    # export parity + zip round trip only
+node scripts/capture.mjs <label>   # design-review captures: 4 viewports × 2 engines + recording
 node scripts/screenshots.mjs   # regenerate docs/media (dev server running)
 ```
 
@@ -93,9 +110,10 @@ src/specimens/   HingeCard / HingeButton / HingeToken + CSS — rendered on stag
 src/domain/      schema.ts (versioned model, recipes, validation) · history.ts (coalesced undo)
 src/storage/     localStorage library with corrupt-data recovery
 src/export/      generateReact.ts · createBundle.ts (zip) · sources.ts (?raw imports)
-src/components/  Stage, BehaviorStrip, Inspector, SpringGraph, ScrubField, ExportDialog, Shelf, TopBar
+src/components/  Masthead, Stage, StageControls, BehaviorRail, Instrument, SpringGraph (+ graphMath),
+                 ScrubField, Library, ExportDialog (export bench), RecoveryBanner
 tests/unit/      vitest
-tests/e2e/       editor.spec.ts · export-parity.spec.ts · measure.ts
+tests/e2e/       editor.spec.ts · a11y.spec.ts · export-parity.spec.ts · export-zip.spec.ts · measure.ts
 export-fixture-template/   the clean app exports are built in
 ```
 
@@ -103,4 +121,4 @@ See [DECISIONS.md](DECISIONS.md) for the architecture trade-offs and [PROGRESS.m
 
 ## Credits
 
-Built by [Maria Showalter](https://mariashowalter.com). Fonts: IBM Plex (SIL Open Font License) via Fontsource. Zip: fflate (MIT). See [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+Built by [Maria Showalter](https://mariashowalter.com). Fonts: IBM Plex Sans and Mono (SIL Open Font License) via Fontsource. Zip: fflate (MIT). See [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).

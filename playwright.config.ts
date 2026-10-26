@@ -24,7 +24,7 @@ export default defineConfig({
     {
       name: 'webkit',
       use: { ...devices['Desktop Safari'], viewport: { width: 1440, height: 900 }, launchOptions: {} },
-      testIgnore: /export-parity/,
+      testIgnore: /export-/,
     },
   ],
 })

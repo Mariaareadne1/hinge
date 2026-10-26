@@ -1,0 +1,169 @@
+{
+  "label": "after",
+  "url": "http://localhost:5401/",
+  "takenAt": "2026-10-26T05:44:57.529Z",
+  "engines": {
+    "chromium": {
+      "version": "156.0.8078.4",
+      "viewports": {
+        "1440x900": {
+          "horizontalOverflow": false,
+          "pageHeight": 900,
+          "specimen": {
+            "x": 444,
+            "y": 335,
+            "w": 300,
+            "h": 294
+          },
+          "stage": {
+            "w": 1440,
+            "h": 836,
+            "shareOfViewport": 0.93
+          },
+          "tabOrder": [
+            "a \"Skip to the spring instrument\"",
+            "input \"\"",
+            "button \"Library 1\"",
+            "button \"Export component\"",
+            "div[button] \"Porcelain\"",
+            "button \"Card\"",
+            "button \"Button\"",
+            "button \"Token\"",
+            "button \"Lift: Soft rise, gentle settle\"",
+            "button \"Snap: Fast, exact, no wobble\"",
+            "button \"Magnet: Short leash, bouncy retu\"",
+            "button[tab] \"02Hoverpointer over · focus2\"",
+            "button \"Hide↘\"",
+            "g[slider] \"Peak handle: arrow left and righ\""
+          ]
+        },
+        "1280x800": {
+          "horizontalOverflow": false,
+          "pageHeight": 800,
+          "specimen": {
+            "x": 364,
+            "y": 285,
+            "w": 300,
+            "h": 294
+          },
+          "stage": {
+            "w": 1280,
+            "h": 736,
+            "shareOfViewport": 0.92
+          }
+        },
+        "768x1024": {
+          "horizontalOverflow": false,
+          "pageHeight": 1024,
+          "specimen": {
+            "x": 234,
+            "y": 375,
+            "w": 300,
+            "h": 294
+          },
+          "stage": {
+            "w": 768,
+            "h": 688,
+            "shareOfViewport": 0.67
+          }
+        },
+        "390x844": {
+          "horizontalOverflow": false,
+          "pageHeight": 844,
+          "specimen": {
+            "x": 65,
+            "y": 285,
+            "w": 260,
+            "h": 294
+          },
+          "stage": {
+            "w": 390,
+            "h": 508,
+            "shareOfViewport": 0.6
+          }
+        }
+      }
+    },
+    "webkit": {
+      "version": "27.2",
+      "viewports": {
+        "1440x900": {
+          "horizontalOverflow": false,
+          "pageHeight": 900,
+          "specimen": {
+            "x": 444,
+            "y": 335,
+            "w": 300,
+            "h": 294
+          },
+          "stage": {
+            "w": 1440,
+            "h": 836,
+            "shareOfViewport": 0.93
+          },
+          "tabOrder": [
+            "input \"\"",
+            "div[button] \"Porcelain\"",
+            "button[tab] \"02Hoverpointer over · focus2\"",
+            "g[slider] \"Peak handle: arrow left and righ\"",
+            "input \"\"",
+            "div[slider] \"Stiffness slider\"",
+            "input \"\"",
+            "div[slider] \"Damping slider\"",
+            "input \"\"",
+            "div[slider] \"Mass slider\"",
+            "body \"Skip to the spring instrumentHIN\"",
+            "input \"\"",
+            "div[button] \"Porcelain\"",
+            "button[tab] \"02Hoverpointer over · focus2\""
+          ]
+        },
+        "1280x800": {
+          "horizontalOverflow": false,
+          "pageHeight": 800,
+          "specimen": {
+            "x": 364,
+            "y": 285,
+            "w": 300,
+            "h": 294
+          },
+          "stage": {
+            "w": 1280,
+            "h": 736,
+            "shareOfViewport": 0.92
+          }
+        },
+        "768x1024": {
+          "horizontalOverflow": false,
+          "pageHeight": 1024,
+          "specimen": {
+            "x": 234,
+            "y": 375,
+            "w": 300,
+            "h": 294
+          },
+          "stage": {
+            "w": 768,
+            "h": 688,
+            "shareOfViewport": 0.67
+          }
+        },
+        "390x844": {
+          "horizontalOverflow": false,
+          "pageHeight": 844,
+          "specimen": {
+            "x": 65,
+            "y": 285,
+            "w": 260,
+            "h": 294
+          },
+          "stage": {
+            "w": 390,
+            "h": 508,
+            "shareOfViewport": 0.6
+          }
+        }
+      }
+    }
+  }
+}

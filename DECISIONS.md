@@ -59,3 +59,22 @@ Native ranges jump the thumb to the click point on first contact, and their look
 in WebKit and Chromium. ScrubField now draws its own `role="slider"`: pointer drags are relative to where the
 gesture began (no jump), Shift scrubs 10× finer, arrow keys step, Home/End go to limits, and the typed field
 remains for exact entry. One gesture is still one undo step.
+
+## D10 — The graph handle only offers peaks the limits can produce
+`springFromPeak` (runtime, unchanged) derives damping from the unclamped stiffness, and `sanitizeSpring` then
+clamps the two separately — so a peak faster than k ≤ 2000 (or slower than k ≥ 10, or outside 1 ≤ c ≤ 200)
+came back with a different ζ and the handle jumped away from the pointer. `components/graphMath.ts` computes
+the reachable peak-time range for the requested overshoot and mass and clamps the *time*, keeping ζ; the graph
+says when it is at a limit. Keyboard nudges on a spring with no peak (ζ ≥ 1) now do nothing and say why,
+instead of silently rewriting the spring. The handle is grabbed relative to the pointer, like the scrub tracks.
+
+## D11 — A held object rises above the instrument
+The instrument overlays the stage. While the runtime reports `data-hinge-state="drag"`, the specimen layer
+is lifted above the rail and instrument (`:has()`), so a throw toward the corner is never hidden. The free
+area between rail and instrument is where the specimen is optically centred.
+
+## D12 — Exported specimens are restyled, with theme hooks
+The specimen CSS ships in every export, so the new ink / bone / citron look ships too. To keep exports usable
+on any page: the card has `max-width: 100%`, and `--hinge-focus` / `--hinge-accent` (with the house colours as
+fallbacks) control the focus ring and accent. Dimensions that the parity tests depend on (transform-only motion)
+are unaffected; the card grew from 280 to 300 px.
